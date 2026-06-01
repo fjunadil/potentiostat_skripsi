@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Potentiostat Realtime</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div>
+        <strong>Potentiostat</strong>
+        <small>Firebase Realtime</small>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="home">Home</button>
+      <button class="nav-item" data-view="measure">Pengukuran</button>
+      <button class="nav-item" data-view="data">Data</button>
+      <button class="nav-item" data-view="network">WiFi</button>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="firebaseState">Firebase: menghubungkan...</span>
+    </div>
+  </aside>
+
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <h1>Potentiostat Raspberry Pi</h1>
+        <p>Monitor dan kendali CV/DPV melalui Firebase.</p>
+      </div>
+      <div class="status-pill" id="statusPill">Loading</div>
+    </header>
+
+    <section class="view active" id="home">
+      <div class="metrics">
+        <article><span>IP</span><strong id="ipValue">-</strong></article>
+        <article><span>Potentiostat</span><strong id="potValue">-</strong></article>
+        <article><span>WiFi</span><strong id="wifiValue">-</strong></article>
+        <article><span>Data</span><strong id="dataValue">0 file</strong></article>
+      </div>
+      <div class="split">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Ringkasan Terakhir</h2>
+            <button class="ghost" id="refreshStatus">Refresh</button>
+          </div>
+          <pre class="summary" id="summaryText">Belum ada hasil pengukuran.</pre>
+        </section>
+        <section class="panel">
+          <h2>Hasil</h2>
+          <pre class="result" id="resultText">-</pre>
+        </section>
+      </div>
+    </section>
+
+    <section class="view" id="measure">
+      <form class="measure-grid" id="measureForm">
+        <section class="panel form-panel">
+          <h2>Pengaturan</h2>
+          <label>Port <input name="port" value="/dev/ttyACM0" maxlength="120"></label>
+          <label>Metode
+            <select name="method" id="methodSelect">
+              <option value="cv">CV</option>
+              <option value="dpv">DPV</option>
+            </select>
+          </label>
+          <div class="field-label">Preset</div>
+          <div class="preset-grid">
+            <button type="button" data-preset="cv_standard">CV Standar</button>
+            <button type="button" data-preset="spce_activation">Aktivasi SPCE</button>
+            <button type="button" data-preset="dpv_standard">DPV Standar</button>
+            <button type="button" data-preset="blank">Blanko</button>
+            <button type="button" data-preset="sample">Sampel</button>
+            <button type="button" data-preset="calibration">Kalibrasi</button>
+          </div>
+          <div class="field-label">Channel</div>
+          <div class="checks">
+            <label><input type="checkbox" name="channel" value="1" checked> Channel 1</label>
+            <label><input type="checkbox" name="channel" value="2" checked> Channel 2</label>
+          </div>
+          <label class="toggle"><input type="checkbox" id="advancedToggle"> Advanced parameter</label>
+          <div class="params hidden" id="parameterFields"></div>
+        </section>
+
+        <section class="panel form-panel">
+          <h2>Metadata</h2>
+          <label>Sampel <input name="sample" maxlength="120"></label>
+          <label>Konsentrasi <input name="concentration" maxlength="120"></label>
+          <label>Operator <input name="operator" value="juna" maxlength="120"></label>
+          <label>Replikasi <input name="replicate" value="1" maxlength="120"></label>
+          <label>Catatan <textarea name="notes" maxlength="240"></textarea></label>
+          <div class="actions">
+            <button class="primary" type="submit" id="startButton">Mulai</button>
+            <button class="danger" type="button" id="stopButton" disabled>Stop</button>
+          </div>
+        </section>
+
+        <section class="panel log-panel">
+          <h2>Log Proses</h2>
+          <pre id="logText"></pre>
+        </section>
+      </form>
+    </section>
+
+    <section class="view" id="data">
+      <div class="data-layout">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Data Pengukuran</h2>
+            <button class="ghost" id="refreshFiles">Refresh</button>
+          </div>
+          <div class="file-list" id="fileList"></div>
+        </section>
+        <section class="panel preview-panel">
+          <h2>Preview</h2>
+          <div id="previewBox" class="preview-box">Data terbaru akan tampil setelah Raspberry sinkron ke Firebase.</div>
+        </section>
+      </div>
+    </section>
+
+    <section class="view" id="network">
+      <section class="panel network-panel">
+        <h2>Koneksi WiFi</h2>
+        <label>Nama WiFi / SSID <input id="ssidInput" maxlength="64"></label>
+        <label>Password <input id="passwordInput" type="password" maxlength="128"></label>
+        <button class="primary" id="connectWifi">Hubungkan WiFi</button>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
