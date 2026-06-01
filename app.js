@@ -155,6 +155,18 @@ function renderFiles() {
 
 function flattenMeasurementFiles(measurements) {
   return Object.entries(measurements || {}).flatMap(([id, item]) => {
+    if (Array.isArray(item.files) && item.files.length) {
+      return item.files.map((file) => ({
+        name: file.name || String(file.path || "").split(/[\\/]/).pop(),
+        path: file.path || "",
+        type: String(file.type || "file").toUpperCase(),
+        time: item.summary ? "Selesai" : id.slice(-8),
+        summary: file.summary || item.summary || "",
+        kind: file.kind || "text",
+        content: file.content || "",
+        dataUrl: file.dataUrl || "",
+      }));
+    }
     const result = item.result || {};
     const time = item.summary ? "Selesai" : id.slice(-8);
     return [
@@ -174,7 +186,12 @@ function flattenMeasurementFiles(measurements) {
 
 function previewFile(file) {
   selectedFile = file.name;
-  $("#previewBox").innerHTML = `<pre>${escapeHtml(file.path)}\n\n${escapeHtml(file.summary || "Preview file mentah hanya tersedia di Raspberry/local web server.")}</pre>`;
+  if (file.kind === "image" && file.dataUrl) {
+    $("#previewBox").innerHTML = `<img alt="${escapeHtml(file.name)}" src="${file.dataUrl}"><pre>${escapeHtml(file.name)}\n${escapeHtml(file.summary || "")}</pre>`;
+  } else {
+    const content = file.content || `${file.path}\n\n${file.summary || "Preview belum tersedia. Jalankan pengukuran baru agar Raspberry mengirim isi file ke Firebase."}`;
+    $("#previewBox").innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+  }
   renderFiles();
 }
 
@@ -229,7 +246,18 @@ async function initFirebase() {
   }
   db = getDatabase(firebaseApp);
   const auth = getAuth(firebaseApp);
-  const credential = await signInAnonymously(auth);
+  let credential;
+  try {
+    credential = await signInAnonymously(auth);
+  } catch (error) {
+    if (error.code === "auth/configuration-not-found") {
+      throw new Error("Firebase Auth belum siap. Aktifkan Authentication > Sign-in method > Anonymous di Firebase Console, lalu deploy ulang Vercel.");
+    }
+    if (error.code === "auth/unauthorized-domain") {
+      throw new Error("Domain Vercel belum diizinkan di Firebase Auth. Tambahkan domain ini di Authentication > Settings > Authorized domains.");
+    }
+    throw error;
+  }
   authUser = credential.user;
 
   analyticsSupported().then((supported) => {
